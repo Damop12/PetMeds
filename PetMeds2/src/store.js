@@ -48,6 +48,14 @@ cargarTema: async () => {
     await guardarMascotas(nueva);
   },
 
+  // --- FOTO ---
+actualizarFotoMascota: async (id, foto) => {
+  const actualizada = get().mascotas.map((m) =>
+    m.id === id ? { ...m, foto } : m
+  );
+  set({ mascotas: actualizada });
+  await guardarMascotas(actualizada);
+},
   // --- MEDICAMENTOS ---
   medicamentos: {},
 
