@@ -1,0 +1,28 @@
+export const temas = {
+    minimal: {
+      fondo: '#f8f8f8',
+      fondoTarjeta: '#ffffff',
+      fondoInput: '#ffffff',
+      texto: '#222222',
+      textoSecundario: '#888888',
+      borde: '#eeeeee',
+      boton: '#6c63ff',
+      botonTexto: '#ffffff',
+      badge: '#eeedfe',
+      badgeTexto: '#534ab7',
+      avatares: ['#eeedfe', '#e1f5ee', '#faeeda', '#fbeaf0', '#e6f1fb'],
+    },
+    colorful: {
+      fondo: '#1a1a2e',
+      fondoTarjeta: '#e94560',
+      fondoInput: '#16213e',
+      texto: '#ffffff',
+      textoSecundario: '#aaaaaa',
+      borde: '#0f3460',
+      boton: '#e94560',
+      botonTexto: '#ffffff',
+      badge: 'rgba(255,255,255,0.2)',
+      badgeTexto: '#ffffff',
+      avatares: ['#e94560', '#0f3460', '#533483', '#e94560', '#0f3460'],
+    },
+  };

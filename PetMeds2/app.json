@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "PetMeds2",
+    "slug": "PetMeds2",
+    "version": "1.0.0",
+    "scheme": "petmeds2",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "59f419ec-4a3d-4a37-99e2-9fb25b14661a"
+      }
+    },
+    "android": {
+      "package": "com.damop12.PetMeds2"
+    }
+  }
+}
