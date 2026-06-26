@@ -1,3 +1,4 @@
+import { Picker } from "@react-native-picker/picker";
 import {
   StyleSheet,
   Text,
@@ -7,16 +8,16 @@ import {
   TouchableOpacity,
   Alert,
   Share,
-} from 'react-native';
-import { useState, useEffect } from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import useStore from '../src/store';
-import { temas } from '../src/temas';
+} from "react-native";
+import { useState, useEffect } from "react";
+import { useLocalSearchParams } from "expo-router";
+import useStore from "../src/store";
+import { temas } from "../src/temas";
 import {
   programarNotificacion,
   cancelarNotificacion,
   pedirPermisos,
-} from '../src/utils/notificaciones';
+} from "../src/utils/notificaciones";
 
 export default function MedicamentosScreen() {
   const { id, nombre } = useLocalSearchParams();
@@ -30,9 +31,10 @@ export default function MedicamentosScreen() {
   const editarMedicamento = useStore((state) => state.editarMedicamento);
   const eliminarMedicamento = useStore((state) => state.eliminarMedicamento);
 
-  const [medicamento, setMedicamento] = useState('');
-  const [dosis, setDosis] = useState('');
-  const [hora, setHora] = useState('');
+  const [medicamento, setMedicamento] = useState("");
+  const [dosis, setDosis] = useState("");
+  const [hora, setHora] = useState("");
+  const [frecuencia, setFrecuencia] = useState("diaria");
   const [editandoId, setEditandoId] = useState(null);
 
   useEffect(() => {
@@ -41,53 +43,69 @@ export default function MedicamentosScreen() {
   }, []);
 
   const agregarOEditar = async () => {
-    if (medicamento === '' || dosis === '' || hora === '') return;
+    if (medicamento === "" || dosis === "" || hora === "") return;
 
     if (editandoId) {
       await cancelarNotificacion(editandoId);
       await programarNotificacion(editandoId, nombre, medicamento, hora);
-      await editarMedicamento(id, editandoId, medicamento, dosis, hora);
+      await editarMedicamento(
+        id,
+        editandoId,
+        medicamento,
+        dosis,
+        hora,
+        frecuencia
+      );
       setEditandoId(null);
     } else {
       const notifId = Date.now().toString();
       await programarNotificacion(notifId, nombre, medicamento, hora);
-      await agregarMedicamento(id, medicamento, dosis, hora);
+      await agregarMedicamento(id, medicamento, dosis, hora, frecuencia);
     }
 
-    setMedicamento('');
-    setDosis('');
-    setHora('');
+    setMedicamento("");
+    setDosis("");
+    setHora("");
+    setFrecuencia("diaria");
   };
 
   const handleEditar = (item) => {
     setMedicamento(item.medicamento);
     setDosis(item.dosis);
     setHora(item.hora);
+    setFrecuencia(item.frecuencia || "diaria");
     setEditandoId(item.id);
   };
 
   const handleEliminar = (itemId) => {
-    Alert.alert('Eliminar medicamento', '¿Estás seguro que querés eliminarlo?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await cancelarNotificacion(itemId);
-          await eliminarMedicamento(id, itemId);
+    Alert.alert(
+      "Eliminar medicamento",
+      "¿Estás seguro que querés eliminarlo?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            await cancelarNotificacion(itemId);
+            await eliminarMedicamento(id, itemId);
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const compartirMedicamentos = async () => {
     if (medicamentos.length === 0) {
-      Alert.alert('Sin medicamentos', 'No hay medicamentos para compartir');
+      Alert.alert("Sin medicamentos", "No hay medicamentos para compartir");
       return;
     }
     const texto = medicamentos
-      .map((m) => `💊 ${m.medicamento}\n   Dosis: ${m.dosis}\n   Hora: ⏰ ${m.hora}`)
-      .join('\n\n');
+      .map(
+        (m) =>
+          `💊 ${m.medicamento}\n   Dosis: ${m.dosis}\n   Hora: ⏰ ${m.hora}`
+      )
+      .join("\n\n");
     await Share.share({ message: `🐾 Medicamentos de ${nombre}:\n\n${texto}` });
   };
 
@@ -95,38 +113,86 @@ export default function MedicamentosScreen() {
     <View style={[styles.container, { backgroundColor: t.fondo }]}>
       <Text style={[styles.titulo, { color: t.texto }]}>💊 {nombre}</Text>
       <Text style={[styles.subtitulo, { color: t.textoSecundario }]}>
-        {medicamentos.length} {medicamentos.length === 1 ? 'medicamento' : 'medicamentos'}
+        {medicamentos.length}{" "}
+        {medicamentos.length === 1 ? "medicamento" : "medicamentos"}
       </Text>
 
       <TextInput
-        style={[styles.input, { backgroundColor: t.fondoInput, borderColor: t.borde, color: t.texto }]}
+        style={[
+          styles.input,
+          {
+            backgroundColor: t.fondoInput,
+            borderColor: t.borde,
+            color: t.texto,
+          },
+        ]}
         placeholder="Nombre del medicamento"
         placeholderTextColor={t.textoSecundario}
         value={medicamento}
         onChangeText={setMedicamento}
       />
       <TextInput
-        style={[styles.input, { backgroundColor: t.fondoInput, borderColor: t.borde, color: t.texto }]}
+        style={[
+          styles.input,
+          {
+            backgroundColor: t.fondoInput,
+            borderColor: t.borde,
+            color: t.texto,
+          },
+        ]}
         placeholder="Dosis (ej: 1 pastilla)"
         placeholderTextColor={t.textoSecundario}
         value={dosis}
         onChangeText={setDosis}
       />
       <TextInput
-        style={[styles.input, { backgroundColor: t.fondoInput, borderColor: t.borde, color: t.texto }]}
+        style={[
+          styles.input,
+          {
+            backgroundColor: t.fondoInput,
+            borderColor: t.borde,
+            color: t.texto,
+          },
+        ]}
         placeholder="Hora (ej: 08:00)"
         placeholderTextColor={t.textoSecundario}
         value={hora}
         onChangeText={setHora}
       />
+     <View style={[styles.pickerContainer, { backgroundColor: t.fondoInput, borderColor: t.borde }]}>
+  <Picker
+    selectedValue={frecuencia}
+    onValueChange={(value) => setFrecuencia(value)}
+    style={{ color: t.texto }}
+    dropdownIconColor={t.texto}
+  >
+    <Picker.Item label="Una vez al día" value="diaria" />
+    <Picker.Item label="Cada 8 horas" value="cada 8hs" />
+    <Picker.Item label="Cada 12 horas" value="cada 12hs" />
+    <Picker.Item label="Cada 24 horas" value="cada 24hs" />
+    <Picker.Item label="Cada 48 horas (día por medio)" value="cada 48hs" />
+    <Picker.Item label="Cada 72 horas (cada 3 días)" value="cada 72hs" />
+    <Picker.Item label="Dos veces por semana" value="2 veces/semana" />
+    <Picker.Item label="Una vez por semana" value="semanal" />
+    <Picker.Item label="Cada 15 días" value="cada 15 días" />
+    <Picker.Item label="Una vez al mes" value="mensual" />
+    <Picker.Item label="Según necesidad" value="según necesidad" />
+  </Picker>
+</View>
 
-      <TouchableOpacity style={[styles.boton, { backgroundColor: t.boton }]} onPress={agregarOEditar}>
+      <TouchableOpacity
+        style={[styles.boton, { backgroundColor: t.boton }]}
+        onPress={agregarOEditar}
+      >
         <Text style={[styles.botonTexto, { color: t.botonTexto }]}>
-          {editandoId ? '✏️ Guardar Cambios' : '+ Agregar Medicamento'}
+          {editandoId ? "✏️ Guardar Cambios" : "+ Agregar Medicamento"}
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.botonCompartir, { backgroundColor: '#25D366' }]} onPress={compartirMedicamentos}>
+      <TouchableOpacity
+        style={[styles.botonCompartir, { backgroundColor: "#25D366" }]}
+        onPress={compartirMedicamentos}
+      >
         <Text style={styles.botonTexto}>📤 Compartir por WhatsApp</Text>
       </TouchableOpacity>
 
@@ -134,14 +200,69 @@ export default function MedicamentosScreen() {
         data={medicamentos}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={
-          <Text style={[styles.vacio, { color: t.textoSecundario }]}>No hay medicamentos todavía</Text>
+          <Text style={[styles.vacio, { color: t.textoSecundario }]}>
+            No hay medicamentos todavía
+          </Text>
         }
         renderItem={({ item, index }) => (
-          <View style={[styles.tarjeta, { backgroundColor: tema === 'colorful' ? t.avatares[index % t.avatares.length] : t.fondoTarjeta, borderColor: t.borde }]}>
+          <View
+            style={[
+              styles.tarjeta,
+              {
+                backgroundColor:
+                  tema === "colorful"
+                    ? t.avatares[index % t.avatares.length]
+                    : t.fondoTarjeta,
+                borderColor: t.borde,
+              },
+            ]}
+          >
             <View style={styles.tarjetaInfo}>
-              <Text style={[styles.nombre, { color: tema === 'colorful' ? '#fff' : t.texto }]}>{item.medicamento}</Text>
-              <Text style={[styles.dosis, { color: tema === 'colorful' ? 'rgba(255,255,255,0.7)' : t.textoSecundario }]}>💊 {item.dosis}</Text>
-              <Text style={[styles.hora, { color: tema === 'colorful' ? 'rgba(255,255,255,0.9)' : t.boton }]}>⏰ {item.hora}</Text>
+              <Text
+                style={[
+                  styles.nombre,
+                  { color: tema === "colorful" ? "#fff" : t.texto },
+                ]}
+              >
+                {item.medicamento}
+              </Text>
+              <Text
+                style={[
+                  styles.dosis,
+                  {
+                    color:
+                      tema === "colorful"
+                        ? "rgba(255,255,255,0.7)"
+                        : t.textoSecundario,
+                  },
+                ]}
+              >
+                💊 {item.dosis}
+              </Text>
+              <Text
+                style={[
+                  styles.hora,
+                  {
+                    color:
+                      tema === "colorful" ? "rgba(255,255,255,0.9)" : t.boton,
+                  },
+                ]}
+              >
+                ⏰ {item.hora}
+              </Text>
+              <Text
+                style={[
+                  styles.frecuencia,
+                  {
+                    color:
+                      tema === "colorful"
+                        ? "rgba(255,255,255,0.7)"
+                        : t.textoSecundario,
+                  },
+                ]}
+              >
+                🔄 {item.frecuencia || "diaria"}
+              </Text>
             </View>
             <View style={styles.tarjetaBotones}>
               <TouchableOpacity onPress={() => handleEditar(item)}>
@@ -165,7 +286,7 @@ const styles = StyleSheet.create({
   },
   titulo: {
     fontSize: 26,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 20,
     marginBottom: 4,
   },
@@ -183,38 +304,38 @@ const styles = StyleSheet.create({
   boton: {
     padding: 14,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 10,
   },
   botonCompartir: {
     padding: 14,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   botonTexto: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   tarjeta: {
     padding: 16,
     borderRadius: 12,
     marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 0.5,
   },
   tarjetaInfo: {
     flex: 1,
   },
   tarjetaBotones: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
   },
   nombre: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   dosis: {
     fontSize: 13,
@@ -228,8 +349,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   vacio: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 40,
     fontSize: 16,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  frecuenciaTexto: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  frecuencia: {
+    fontSize: 13,
+    marginTop: 4,
   },
 });

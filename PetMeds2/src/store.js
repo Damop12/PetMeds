@@ -66,12 +66,13 @@ actualizarFotoMascota: async (id, foto) => {
     }));
   },
 
-  agregarMedicamento: async (mascotaId, medicamento, dosis, hora) => {
+  agregarMedicamento: async (mascotaId, medicamento, dosis, hora, frecuencia) => {
     const nuevo = {
       id: Date.now().toString(),
       medicamento,
       dosis,
       hora,
+      frecuencia,
     };
     const lista = get().medicamentos[mascotaId] || [];
     const nuevaLista = [...lista, nuevo];
@@ -81,10 +82,10 @@ actualizarFotoMascota: async (id, foto) => {
     await guardarMedicamentos(mascotaId, nuevaLista);
   },
 
-  editarMedicamento: async (mascotaId, id, medicamento, dosis, hora) => {
+  editarMedicamento: async (mascotaId, id, medicamento, dosis, hora, frecuencia) => {
     const lista = get().medicamentos[mascotaId] || [];
     const actualizada = lista.map((m) =>
-      m.id === id ? { ...m, medicamento, dosis, hora } : m
+      m.id === id ? { ...m, medicamento, dosis, hora, frecuencia } : m
     );
     set((state) => ({
       medicamentos: { ...state.medicamentos, [mascotaId]: actualizada },
