@@ -43,32 +43,25 @@ export default function MedicamentosScreen() {
   }, []);
 
   const agregarOEditar = async () => {
-    if (medicamento === "" || dosis === "" || hora === "") return;
+    if (medicamento === '' || dosis === '' || hora === '') return;
 
     if (editandoId) {
       await cancelarNotificacion(editandoId);
-      await programarNotificacion(editandoId, nombre, medicamento, hora);
-      await editarMedicamento(
-        id,
-        editandoId,
-        medicamento,
-        dosis,
-        hora,
-        frecuencia
-      );
+      await programarNotificacion(editandoId, nombre, medicamento, hora, frecuencia);
+      await editarMedicamento(id, editandoId, medicamento, dosis, hora, frecuencia);
       setEditandoId(null);
     } else {
       const notifId = Date.now().toString();
-      await programarNotificacion(notifId, nombre, medicamento, hora);
+      await programarNotificacion(notifId, nombre, medicamento, hora, frecuencia);
       await agregarMedicamento(id, medicamento, dosis, hora, frecuencia);
     }
 
-    setMedicamento("");
-    setDosis("");
-    setHora("");
-    setFrecuencia("diaria");
+    setMedicamento('');
+    setDosis('');
+    setHora('');
+    setFrecuencia('diaria');
   };
-
+      
   const handleEditar = (item) => {
     setMedicamento(item.medicamento);
     setDosis(item.dosis);
