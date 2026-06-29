@@ -35,6 +35,7 @@ export default function MedicamentosScreen() {
   const [dosis, setDosis] = useState("");
   const [hora, setHora] = useState("");
   const [frecuencia, setFrecuencia] = useState("diaria");
+  const [vencimiento, setVencimiento] = useState('');
   const [editandoId, setEditandoId] = useState(null);
 
   useEffect(() => {
@@ -48,25 +49,27 @@ export default function MedicamentosScreen() {
     if (editandoId) {
       await cancelarNotificacion(editandoId);
       await programarNotificacion(editandoId, nombre, medicamento, hora, frecuencia);
-      await editarMedicamento(id, editandoId, medicamento, dosis, hora, frecuencia);
+      await editarMedicamento(id, editandoId, medicamento, dosis, hora, frecuencia, vencimiento);
       setEditandoId(null);
     } else {
       const notifId = Date.now().toString();
       await programarNotificacion(notifId, nombre, medicamento, hora, frecuencia);
-      await agregarMedicamento(id, medicamento, dosis, hora, frecuencia);
+      await agregarMedicamento(id, medicamento, dosis, hora, frecuencia, vencimiento);
     }
 
     setMedicamento('');
     setDosis('');
     setHora('');
     setFrecuencia('diaria');
+    setVencimiento('');
   };
       
   const handleEditar = (item) => {
     setMedicamento(item.medicamento);
     setDosis(item.dosis);
     setHora(item.hora);
-    setFrecuencia(item.frecuencia || "diaria");
+    setFrecuencia(item.frecuencia || 'diaria');
+    setVencimiento(item.vencimiento || '');
     setEditandoId(item.id);
   };
 
@@ -172,7 +175,20 @@ export default function MedicamentosScreen() {
     <Picker.Item label="Según necesidad" value="según necesidad" />
   </Picker>
 </View>
-
+<TextInput
+  style={[
+    styles.input,
+    {
+      backgroundColor: t.fondoInput,
+      borderColor: t.borde,
+      color: t.texto,
+    },
+  ]}
+  placeholder="Vencimiento (ej: 31/12/2025)"
+  placeholderTextColor={t.textoSecundario}
+  value={vencimiento}
+  onChangeText={setVencimiento}
+/>
       <TouchableOpacity
         style={[styles.boton, { backgroundColor: t.boton }]}
         onPress={agregarOEditar}
@@ -256,6 +272,11 @@ export default function MedicamentosScreen() {
               >
                 🔄 {item.frecuencia || "diaria"}
               </Text>
+              {item.vencimiento ? (
+                <Text style={[styles.frecuencia, { color: tema === 'colorful' ? 'rgba(255,255,255,0.7)' : t.textoSecundario }]}>
+                  📅 Vence: {item.vencimiento}
+                </Text>
+              ) : null}
             </View>
             <View style={styles.tarjetaBotones}>
               <TouchableOpacity onPress={() => handleEditar(item)}>
