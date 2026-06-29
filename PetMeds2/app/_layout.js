@@ -5,6 +5,7 @@ export default function Layout() {
     <Stack>
       <Stack.Screen name="index" options={{ title: 'Mis Mascotas' }} />
       <Stack.Screen name="medicamentos" options={{ title: 'Medicamentos' }} />
+      <Stack.Screen name="vacunas" options={{ title: 'Vacunas' }} />
     </Stack>
   );
 }

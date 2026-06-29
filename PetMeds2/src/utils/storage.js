@@ -37,3 +37,20 @@ export const cargarMedicamentos = async (mascotaId) => {
     return [];
   }
 };
+export const guardarVacunas = async (mascotaId, vacunas) => {
+  try {
+    await AsyncStorage.setItem(`vacunas_${mascotaId}`, JSON.stringify(vacunas));
+  } catch (error) {
+    console.error('Error guardando vacunas:', error);
+  }
+};
+
+export const cargarVacunas = async (mascotaId) => {
+  try {
+    const data = await AsyncStorage.getItem(`vacunas_${mascotaId}`);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error cargando vacunas:', error);
+    return [];
+  }
+};

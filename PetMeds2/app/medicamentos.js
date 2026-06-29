@@ -1,4 +1,5 @@
 import { Picker } from "@react-native-picker/picker";
+import { useRouter } from "expo-router";
 import {
   StyleSheet,
   Text,
@@ -35,8 +36,9 @@ export default function MedicamentosScreen() {
   const [dosis, setDosis] = useState("");
   const [hora, setHora] = useState("");
   const [frecuencia, setFrecuencia] = useState("diaria");
-  const [vencimiento, setVencimiento] = useState('');
+  const [vencimiento, setVencimiento] = useState("");
   const [editandoId, setEditandoId] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     pedirPermisos();
@@ -44,32 +46,59 @@ export default function MedicamentosScreen() {
   }, []);
 
   const agregarOEditar = async () => {
-    if (medicamento === '' || dosis === '' || hora === '') return;
+    if (medicamento === "" || dosis === "" || hora === "") return;
 
     if (editandoId) {
       await cancelarNotificacion(editandoId);
-      await programarNotificacion(editandoId, nombre, medicamento, hora, frecuencia);
-      await editarMedicamento(id, editandoId, medicamento, dosis, hora, frecuencia, vencimiento);
+      await programarNotificacion(
+        editandoId,
+        nombre,
+        medicamento,
+        hora,
+        frecuencia
+      );
+      await editarMedicamento(
+        id,
+        editandoId,
+        medicamento,
+        dosis,
+        hora,
+        frecuencia,
+        vencimiento
+      );
       setEditandoId(null);
     } else {
       const notifId = Date.now().toString();
-      await programarNotificacion(notifId, nombre, medicamento, hora, frecuencia);
-      await agregarMedicamento(id, medicamento, dosis, hora, frecuencia, vencimiento);
+      await programarNotificacion(
+        notifId,
+        nombre,
+        medicamento,
+        hora,
+        frecuencia
+      );
+      await agregarMedicamento(
+        id,
+        medicamento,
+        dosis,
+        hora,
+        frecuencia,
+        vencimiento
+      );
     }
 
-    setMedicamento('');
-    setDosis('');
-    setHora('');
-    setFrecuencia('diaria');
-    setVencimiento('');
+    setMedicamento("");
+    setDosis("");
+    setHora("");
+    setFrecuencia("diaria");
+    setVencimiento("");
   };
-      
+
   const handleEditar = (item) => {
     setMedicamento(item.medicamento);
     setDosis(item.dosis);
     setHora(item.hora);
-    setFrecuencia(item.frecuencia || 'diaria');
-    setVencimiento(item.vencimiento || '');
+    setFrecuencia(item.frecuencia || "diaria");
+    setVencimiento(item.vencimiento || "");
     setEditandoId(item.id);
   };
 
@@ -155,40 +184,48 @@ export default function MedicamentosScreen() {
         value={hora}
         onChangeText={setHora}
       />
-     <View style={[styles.pickerContainer, { backgroundColor: t.fondoInput, borderColor: t.borde }]}>
-  <Picker
-    selectedValue={frecuencia}
-    onValueChange={(value) => setFrecuencia(value)}
-    style={{ color: t.texto }}
-    dropdownIconColor={t.texto}
-  >
-    <Picker.Item label="Una vez al día" value="diaria" />
-    <Picker.Item label="Cada 8 horas" value="cada 8hs" />
-    <Picker.Item label="Cada 12 horas" value="cada 12hs" />
-    <Picker.Item label="Cada 24 horas" value="cada 24hs" />
-    <Picker.Item label="Cada 48 horas (día por medio)" value="cada 48hs" />
-    <Picker.Item label="Cada 72 horas (cada 3 días)" value="cada 72hs" />
-    <Picker.Item label="Dos veces por semana" value="2 veces/semana" />
-    <Picker.Item label="Una vez por semana" value="semanal" />
-    <Picker.Item label="Cada 15 días" value="cada 15 días" />
-    <Picker.Item label="Una vez al mes" value="mensual" />
-    <Picker.Item label="Según necesidad" value="según necesidad" />
-  </Picker>
-</View>
-<TextInput
-  style={[
-    styles.input,
-    {
-      backgroundColor: t.fondoInput,
-      borderColor: t.borde,
-      color: t.texto,
-    },
-  ]}
-  placeholder="Vencimiento (ej: 31/12/2025)"
-  placeholderTextColor={t.textoSecundario}
-  value={vencimiento}
-  onChangeText={setVencimiento}
-/>
+      <View
+        style={[
+          styles.pickerContainer,
+          { backgroundColor: t.fondoInput, borderColor: t.borde },
+        ]}
+      >
+        <Picker
+          selectedValue={frecuencia}
+          onValueChange={(value) => setFrecuencia(value)}
+          style={{ color: t.texto }}
+          dropdownIconColor={t.texto}
+        >
+          <Picker.Item label="Una vez al día" value="diaria" />
+          <Picker.Item label="Cada 8 horas" value="cada 8hs" />
+          <Picker.Item label="Cada 12 horas" value="cada 12hs" />
+          <Picker.Item label="Cada 24 horas" value="cada 24hs" />
+          <Picker.Item
+            label="Cada 48 horas (día por medio)"
+            value="cada 48hs"
+          />
+          <Picker.Item label="Cada 72 horas (cada 3 días)" value="cada 72hs" />
+          <Picker.Item label="Dos veces por semana" value="2 veces/semana" />
+          <Picker.Item label="Una vez por semana" value="semanal" />
+          <Picker.Item label="Cada 15 días" value="cada 15 días" />
+          <Picker.Item label="Una vez al mes" value="mensual" />
+          <Picker.Item label="Según necesidad" value="según necesidad" />
+        </Picker>
+      </View>
+      <TextInput
+        style={[
+          styles.input,
+          {
+            backgroundColor: t.fondoInput,
+            borderColor: t.borde,
+            color: t.texto,
+          },
+        ]}
+        placeholder="Vencimiento (ej: 31/12/2025)"
+        placeholderTextColor={t.textoSecundario}
+        value={vencimiento}
+        onChangeText={setVencimiento}
+      />
       <TouchableOpacity
         style={[styles.boton, { backgroundColor: t.boton }]}
         onPress={agregarOEditar}
@@ -203,6 +240,14 @@ export default function MedicamentosScreen() {
         onPress={compartirMedicamentos}
       >
         <Text style={styles.botonTexto}>📤 Compartir por WhatsApp</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.botonVacunas, { backgroundColor: "#e94560" }]}
+        onPress={() =>
+          router.push({ pathname: "/vacunas", params: { id, nombre } })
+        }
+      >
+        <Text style={styles.botonTexto}>💉 Ver Vacunas</Text>
       </TouchableOpacity>
 
       <FlatList
@@ -273,7 +318,17 @@ export default function MedicamentosScreen() {
                 🔄 {item.frecuencia || "diaria"}
               </Text>
               {item.vencimiento ? (
-                <Text style={[styles.frecuencia, { color: tema === 'colorful' ? 'rgba(255,255,255,0.7)' : t.textoSecundario }]}>
+                <Text
+                  style={[
+                    styles.frecuencia,
+                    {
+                      color:
+                        tema === "colorful"
+                          ? "rgba(255,255,255,0.7)"
+                          : t.textoSecundario,
+                    },
+                  ]}
+                >
                   📅 Vence: {item.vencimiento}
                 </Text>
               ) : null}
@@ -371,7 +426,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 10,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   frecuenciaTexto: {
     fontSize: 12,
@@ -380,5 +435,11 @@ const styles = StyleSheet.create({
   frecuencia: {
     fontSize: 13,
     marginTop: 4,
+  },
+  botonVacunas: {
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 20,
   },
 });

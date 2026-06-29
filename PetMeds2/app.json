@@ -20,6 +20,9 @@
     },
     "android": {
       "package": "com.damop12.PetMeds2"
-    }
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ]
   }
 }
