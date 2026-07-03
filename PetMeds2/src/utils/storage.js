@@ -54,3 +54,21 @@ export const cargarVacunas = async (mascotaId) => {
     return [];
   }
 };
+
+export const guardarBanos = async (mascotaId, banos) => {
+  try {
+    await AsyncStorage.setItem(`banos_${mascotaId}`, JSON.stringify(banos));
+  } catch (error) {
+    console.error('Error guardando baños:', error);
+  }
+};
+
+export const cargarBanos = async (mascotaId) => {
+  try {
+    const data = await AsyncStorage.getItem(`banos_${mascotaId}`);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error cargando baños:', error);
+    return [];
+  }
+};

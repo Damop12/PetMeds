@@ -1,5 +1,4 @@
 import { Picker } from "@react-native-picker/picker";
-import { useRouter } from "expo-router";
 import {
   StyleSheet,
   Text,
@@ -9,9 +8,10 @@ import {
   TouchableOpacity,
   Alert,
   Share,
+  Modal,
 } from "react-native";
 import { useState, useEffect } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import useStore from "../src/store";
 import { temas } from "../src/temas";
 import {
@@ -22,6 +22,7 @@ import {
 
 export default function MedicamentosScreen() {
   const { id, nombre } = useLocalSearchParams();
+  const router = useRouter();
 
   const tema = useStore((state) => state.tema);
   const t = temas[tema];
@@ -32,18 +33,27 @@ export default function MedicamentosScreen() {
   const editarMedicamento = useStore((state) => state.editarMedicamento);
   const eliminarMedicamento = useStore((state) => state.eliminarMedicamento);
 
+  const [modalVisible, setModalVisible] = useState(false);
   const [medicamento, setMedicamento] = useState("");
   const [dosis, setDosis] = useState("");
   const [hora, setHora] = useState("");
   const [frecuencia, setFrecuencia] = useState("diaria");
   const [vencimiento, setVencimiento] = useState("");
   const [editandoId, setEditandoId] = useState(null);
-  const router = useRouter();
 
   useEffect(() => {
     pedirPermisos();
     cargarMedicamentos(id);
   }, []);
+
+  const limpiarFormulario = () => {
+    setMedicamento("");
+    setDosis("");
+    setHora("");
+    setFrecuencia("diaria");
+    setVencimiento("");
+    setEditandoId(null);
+  };
 
   const agregarOEditar = async () => {
     if (medicamento === "" || dosis === "" || hora === "") return;
@@ -86,11 +96,8 @@ export default function MedicamentosScreen() {
       );
     }
 
-    setMedicamento("");
-    setDosis("");
-    setHora("");
-    setFrecuencia("diaria");
-    setVencimiento("");
+    limpiarFormulario();
+    setModalVisible(false);
   };
 
   const handleEditar = (item) => {
@@ -100,6 +107,7 @@ export default function MedicamentosScreen() {
     setFrecuencia(item.frecuencia || "diaria");
     setVencimiento(item.vencimiento || "");
     setEditandoId(item.id);
+    setModalVisible(true);
   };
 
   const handleEliminar = (itemId) => {
@@ -128,7 +136,9 @@ export default function MedicamentosScreen() {
     const texto = medicamentos
       .map(
         (m) =>
-          `💊 ${m.medicamento}\n   Dosis: ${m.dosis}\n   Hora: ⏰ ${m.hora}`
+          `💊 ${m.medicamento}\n   Dosis: ${m.dosis}\n   Hora: ⏰ ${
+            m.hora
+          }\n   Frecuencia: 🔄 ${m.frecuencia || "diaria"}`
       )
       .join("\n\n");
     await Share.share({ message: `🐾 Medicamentos de ${nombre}:\n\n${texto}` });
@@ -142,120 +152,37 @@ export default function MedicamentosScreen() {
         {medicamentos.length === 1 ? "medicamento" : "medicamentos"}
       </Text>
 
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: t.fondoInput,
-            borderColor: t.borde,
-            color: t.texto,
-          },
-        ]}
-        placeholder="Nombre del medicamento"
-        placeholderTextColor={t.textoSecundario}
-        value={medicamento}
-        onChangeText={setMedicamento}
-      />
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: t.fondoInput,
-            borderColor: t.borde,
-            color: t.texto,
-          },
-        ]}
-        placeholder="Dosis (ej: 1 pastilla)"
-        placeholderTextColor={t.textoSecundario}
-        value={dosis}
-        onChangeText={setDosis}
-      />
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: t.fondoInput,
-            borderColor: t.borde,
-            color: t.texto,
-          },
-        ]}
-        placeholder="Hora (ej: 08:00)"
-        placeholderTextColor={t.textoSecundario}
-        value={hora}
-        onChangeText={setHora}
-      />
-      <View
-        style={[
-          styles.pickerContainer,
-          { backgroundColor: t.fondoInput, borderColor: t.borde },
-        ]}
-      >
-        <Picker
-          selectedValue={frecuencia}
-          onValueChange={(value) => setFrecuencia(value)}
-          style={{ color: t.texto }}
-          dropdownIconColor={t.texto}
+      <View style={styles.botonesRow}>
+        <TouchableOpacity
+          style={[styles.btnAccion, { backgroundColor: "#e94560" }]}
+          onPress={() =>
+            router.push({ pathname: "/vacunas", params: { id, nombre } })
+          }
         >
-          <Picker.Item label="Una vez al día" value="diaria" />
-          <Picker.Item label="Cada 8 horas" value="cada 8hs" />
-          <Picker.Item label="Cada 12 horas" value="cada 12hs" />
-          <Picker.Item label="Cada 24 horas" value="cada 24hs" />
-          <Picker.Item
-            label="Cada 48 horas (día por medio)"
-            value="cada 48hs"
-          />
-          <Picker.Item label="Cada 72 horas (cada 3 días)" value="cada 72hs" />
-          <Picker.Item label="Dos veces por semana" value="2 veces/semana" />
-          <Picker.Item label="Una vez por semana" value="semanal" />
-          <Picker.Item label="Cada 15 días" value="cada 15 días" />
-          <Picker.Item label="Una vez al mes" value="mensual" />
-          <Picker.Item label="Según necesidad" value="según necesidad" />
-        </Picker>
+          <Text style={styles.btnAccionTexto}>💉 Vacunas</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.btnAccion, { backgroundColor: "#3498db" }]}
+          onPress={() =>
+            router.push({ pathname: "/bano", params: { id, nombre } })
+          }
+        >
+          <Text style={styles.btnAccionTexto}>🛁 Baños</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.btnAccion, { backgroundColor: "#25D366" }]}
+          onPress={compartirMedicamentos}
+        >
+          <Text style={styles.btnAccionTexto}>📤 Compartir</Text>
+        </TouchableOpacity>
       </View>
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: t.fondoInput,
-            borderColor: t.borde,
-            color: t.texto,
-          },
-        ]}
-        placeholder="Vencimiento (ej: 31/12/2025)"
-        placeholderTextColor={t.textoSecundario}
-        value={vencimiento}
-        onChangeText={setVencimiento}
-      />
-      <TouchableOpacity
-        style={[styles.boton, { backgroundColor: t.boton }]}
-        onPress={agregarOEditar}
-      >
-        <Text style={[styles.botonTexto, { color: t.botonTexto }]}>
-          {editandoId ? "✏️ Guardar Cambios" : "+ Agregar Medicamento"}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.botonCompartir, { backgroundColor: "#25D366" }]}
-        onPress={compartirMedicamentos}
-      >
-        <Text style={styles.botonTexto}>📤 Compartir por WhatsApp</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.botonVacunas, { backgroundColor: "#e94560" }]}
-        onPress={() =>
-          router.push({ pathname: "/vacunas", params: { id, nombre } })
-        }
-      >
-        <Text style={styles.botonTexto}>💉 Ver Vacunas</Text>
-      </TouchableOpacity>
 
       <FlatList
         data={medicamentos}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={
           <Text style={[styles.vacio, { color: t.textoSecundario }]}>
-            No hay medicamentos todavía
+            No hay medicamentos todavía.{"\n"}Tocá el + para agregar uno.
           </Text>
         }
         renderItem={({ item, index }) => (
@@ -344,6 +271,155 @@ export default function MedicamentosScreen() {
           </View>
         )}
       />
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: t.boton }]}
+        onPress={() => {
+          limpiarFormulario();
+          setModalVisible(true);
+        }}
+      >
+        <Text style={styles.fabTexto}>💊 Agregar</Text>
+      </TouchableOpacity>
+
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          limpiarFormulario();
+          setModalVisible(false);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[styles.modalContenido, { backgroundColor: t.fondoTarjeta }]}
+          >
+            <View style={styles.modalHandle} />
+            <Text style={[styles.modalTitulo, { color: t.texto }]}>
+              {editandoId ? "✏️ Editar medicamento" : "+ Nuevo medicamento"}
+            </Text>
+
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: t.fondoInput,
+                  borderColor: t.borde,
+                  color: t.texto,
+                },
+              ]}
+              placeholder="Nombre del medicamento"
+              placeholderTextColor={t.textoSecundario}
+              value={medicamento}
+              onChangeText={setMedicamento}
+            />
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: t.fondoInput,
+                  borderColor: t.borde,
+                  color: t.texto,
+                },
+              ]}
+              placeholder="Dosis (ej: 1 pastilla)"
+              placeholderTextColor={t.textoSecundario}
+              value={dosis}
+              onChangeText={setDosis}
+            />
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: t.fondoInput,
+                  borderColor: t.borde,
+                  color: t.texto,
+                },
+              ]}
+              placeholder="Hora (ej: 08:00)"
+              placeholderTextColor={t.textoSecundario}
+              value={hora}
+              onChangeText={setHora}
+            />
+
+            <View
+              style={[
+                styles.pickerContainer,
+                { backgroundColor: t.fondoInput, borderColor: t.borde },
+              ]}
+            >
+              <Picker
+                selectedValue={frecuencia}
+                onValueChange={(value) => setFrecuencia(value)}
+                style={{ color: t.texto }}
+                dropdownIconColor={t.texto}
+              >
+                <Picker.Item label="Una vez al día" value="diaria" />
+                <Picker.Item label="Cada 8 horas" value="cada 8hs" />
+                <Picker.Item label="Cada 12 horas" value="cada 12hs" />
+                <Picker.Item label="Cada 24 horas" value="cada 24hs" />
+                <Picker.Item
+                  label="Cada 48 horas (día por medio)"
+                  value="cada 48hs"
+                />
+                <Picker.Item
+                  label="Cada 72 horas (cada 3 días)"
+                  value="cada 72hs"
+                />
+                <Picker.Item
+                  label="Dos veces por semana"
+                  value="2 veces/semana"
+                />
+                <Picker.Item label="Una vez por semana" value="semanal" />
+                <Picker.Item label="Cada 15 días" value="cada 15 días" />
+                <Picker.Item label="Una vez al mes" value="mensual" />
+                <Picker.Item label="Según necesidad" value="según necesidad" />
+              </Picker>
+            </View>
+
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: t.fondoInput,
+                  borderColor: t.borde,
+                  color: t.texto,
+                },
+              ]}
+              placeholder="Vencimiento (ej: 31/12/2026) - opcional"
+              placeholderTextColor={t.textoSecundario}
+              value={vencimiento}
+              onChangeText={setVencimiento}
+            />
+
+            <TouchableOpacity
+              style={[styles.boton, { backgroundColor: t.boton }]}
+              onPress={agregarOEditar}
+            >
+              <Text style={[styles.botonTexto, { color: t.botonTexto }]}>
+                {editandoId ? "✏️ Guardar Cambios" : "+ Agregar Medicamento"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.botonCancelar, { borderColor: t.borde }]}
+              onPress={() => {
+                limpiarFormulario();
+                setModalVisible(false);
+              }}
+            >
+              <Text
+                style={[
+                  styles.botonCancelarTexto,
+                  { color: t.textoSecundario },
+                ]}
+              >
+                Cancelar
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -361,30 +437,22 @@ const styles = StyleSheet.create({
   },
   subtitulo: {
     fontSize: 14,
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  input: {
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-    fontSize: 16,
-    borderWidth: 1,
+  botonesRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 16,
   },
-  boton: {
-    padding: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  botonCompartir: {
-    padding: 14,
+  btnAccion: {
+    flex: 1,
+    padding: 10,
     borderRadius: 10,
     alignItems: "center",
-    marginBottom: 20,
   },
-  botonTexto: {
+  btnAccionTexto: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 11,
     fontWeight: "bold",
   },
   tarjeta: {
@@ -414,13 +482,64 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 4,
   },
+  frecuencia: {
+    fontSize: 13,
+    marginTop: 4,
+  },
   btnIcon: {
     fontSize: 18,
   },
   vacio: {
     textAlign: "center",
-    marginTop: 40,
+    marginTop: 60,
     fontSize: 16,
+    lineHeight: 24,
+  },
+  fab: {
+    position: "absolute",
+    bottom: 50,
+    right: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 5,
+  },
+  fabTexto: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContenido: {
+    borderRadius: 20,
+    padding: 20,
+    paddingBottom: 30,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#ddd",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  modalTitulo: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  input: {
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    fontSize: 16,
+    borderWidth: 1,
   },
   pickerContainer: {
     borderWidth: 1,
@@ -428,18 +547,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     overflow: "hidden",
   },
-  frecuenciaTexto: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  frecuencia: {
-    fontSize: 13,
-    marginTop: 4,
-  },
-  botonVacunas: {
+  boton: {
     padding: 14,
     borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 20,
+    alignItems: "center",
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  botonTexto: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  botonCancelar: {
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    borderWidth: 1,
+  },
+  botonCancelarTexto: {
+    fontSize: 15,
   },
 });
