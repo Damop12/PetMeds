@@ -212,7 +212,7 @@ export default function MedicamentosScreen() {
         keyExtractor={(item) => item.id}
         ListEmptyComponent={
           <Text style={[styles.vacio, { color: t.textoSecundario }]}>
-            No hay medicamentos todavía.{"\n"}Tocá el + para agregar uno.
+            No hay medicamentos todavía.{"\n"}Tocá el 💊 para agregar uno.
           </Text>
         }
         renderItem={({ item, index }) => (
