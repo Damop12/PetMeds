@@ -1,3 +1,5 @@
+import { cargarVacunas, cargarBanos } from "../src/utils/storage";
+import { exportarPDF, exportarExcel } from "../src/utils/exportar";
 import { Picker } from "@react-native-picker/picker";
 import {
   StyleSheet,
@@ -32,7 +34,7 @@ export default function MedicamentosScreen() {
   const agregarMedicamento = useStore((state) => state.agregarMedicamento);
   const editarMedicamento = useStore((state) => state.editarMedicamento);
   const eliminarMedicamento = useStore((state) => state.eliminarMedicamento);
-
+  const mascotas = useStore((state) => state.mascotas);
   const [modalVisible, setModalVisible] = useState(false);
   const [medicamento, setMedicamento] = useState("");
   const [dosis, setDosis] = useState("");
@@ -131,6 +133,7 @@ export default function MedicamentosScreen() {
   const compartirMedicamentos = async () => {
     if (medicamentos.length === 0) {
       Alert.alert("Sin medicamentos", "No hay medicamentos para compartir");
+
       return;
     }
     const texto = medicamentos
@@ -143,7 +146,19 @@ export default function MedicamentosScreen() {
       .join("\n\n");
     await Share.share({ message: `🐾 Medicamentos de ${nombre}:\n\n${texto}` });
   };
+  const mascota = mascotas.find((m) => m.id === id) || { nombre, tipo: "" };
 
+  const handleExportarPDF = async () => {
+    const vacunas = await cargarVacunas(id);
+    const banos = await cargarBanos(id);
+    await exportarPDF(mascota, medicamentos, vacunas, banos);
+  };
+
+  const handleExportarExcel = async () => {
+    const vacunas = await cargarVacunas(id);
+    const banos = await cargarBanos(id);
+    await exportarExcel(mascota, medicamentos, vacunas, banos);
+  };
   return (
     <View style={[styles.container, { backgroundColor: t.fondo }]}>
       <Text style={[styles.titulo, { color: t.texto }]}>💊 {nombre}</Text>
@@ -177,6 +192,21 @@ export default function MedicamentosScreen() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.botonesRow}>
+        <TouchableOpacity
+          style={[styles.btnAccion, { backgroundColor: "#e67e22" }]}
+          onPress={handleExportarPDF}
+        >
+          <Text style={styles.btnAccionTexto}>📄 PDF</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.btnAccion, { backgroundColor: "#27ae60" }]}
+          onPress={handleExportarExcel}
+        >
+          <Text style={styles.btnAccionTexto}>📊 Excel</Text>
+        </TouchableOpacity>
+      </View>
+   
       <FlatList
         data={medicamentos}
         keyExtractor={(item) => item.id}
@@ -386,7 +416,7 @@ export default function MedicamentosScreen() {
                   color: t.texto,
                 },
               ]}
-              placeholder="Vencimiento (ej: 31/12/2026) - opcional"
+              placeholder="Vencimiento (ej: DD/MM/AA) - opcional"
               placeholderTextColor={t.textoSecundario}
               value={vencimiento}
               onChangeText={setVencimiento}
