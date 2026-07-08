@@ -10,30 +10,6 @@ export const pedirPermisos = async () => {
   }
 };
 
-export const programarNotificacion = async (id, nombreMascota, medicamento, hora, frecuencia = 'diaria') => {
-  try {
-    const [horas, minutos] = hora.split(':').map(Number);
-
-    await cancelarNotificacion(id);
-
-    if (frecuencia === 'cada 8hs') {
-      const horas2 = (horas + 8) % 24;
-      const horas3 = (horas + 16) % 24;
-      await programarUna(`${id}_1`, nombreMascota, medicamento, horas, minutos);
-      await programarUna(`${id}_2`, nombreMascota, medicamento, horas2, minutos);
-      await programarUna(`${id}_3`, nombreMascota, medicamento, horas3, minutos);
-    } else if (frecuencia === 'cada 12hs') {
-      const horas2 = (horas + 12) % 24;
-      await programarUna(`${id}_1`, nombreMascota, medicamento, horas, minutos);
-      await programarUna(`${id}_2`, nombreMascota, medicamento, horas2, minutos);
-    } else {
-      await programarUna(id, nombreMascota, medicamento, horas, minutos);
-    }
-  } catch (error) {
-    console.log('No se pudo programar la notificación:', error);
-  }
-};
-
 const programarUna = async (id, nombreMascota, medicamento, horas, minutos) => {
   await Notifications.scheduleNotificationAsync({
     identifier: id,
@@ -48,6 +24,144 @@ const programarUna = async (id, nombreMascota, medicamento, horas, minutos) => {
       minute: minutos,
     },
   });
+};
+
+const programarSemanal = async (id, nombreMascota, medicamento, horas, minutos) => {
+  await Notifications.scheduleNotificationAsync({
+    identifier: id,
+    content: {
+      title: `💊 Medicamento de ${nombreMascota}`,
+      body: `Es hora de darle ${medicamento}`,
+      sound: true,
+    },
+    trigger: {
+      type: 'weekly',
+      weekday: new Date().getDay() + 1,
+      hour: horas,
+      minute: minutos,
+    },
+  });
+};
+
+export const programarNotificacion = async (id, nombreMascota, medicamento, hora, frecuencia = 'diaria') => {
+  try {
+    const [horas, minutos] = hora.split(':').map(Number);
+    await cancelarNotificacion(id);
+
+    switch (frecuencia) {
+      case 'cada 8hs':
+        await programarUna(`${id}_1`, nombreMascota, medicamento, horas, minutos);
+        await programarUna(`${id}_2`, nombreMascota, medicamento, (horas + 8) % 24, minutos);
+        await programarUna(`${id}_3`, nombreMascota, medicamento, (horas + 16) % 24, minutos);
+        break;
+
+      case 'cada 12hs':
+        await programarUna(`${id}_1`, nombreMascota, medicamento, horas, minutos);
+        await programarUna(`${id}_2`, nombreMascota, medicamento, (horas + 12) % 24, minutos);
+        break;
+
+      case 'cada 24hs':
+      case 'diaria':
+        await programarUna(id, nombreMascota, medicamento, horas, minutos);
+        break;
+
+      case 'cada 48hs':
+        await Notifications.scheduleNotificationAsync({
+          identifier: id,
+          content: {
+            title: `💊 Medicamento de ${nombreMascota}`,
+            body: `Es hora de darle ${medicamento}`,
+            sound: true,
+          },
+          trigger: {
+            type: 'timeInterval',
+            seconds: 48 * 60 * 60,
+            repeats: true,
+          },
+        });
+        break;
+
+      case 'cada 72hs':
+        await Notifications.scheduleNotificationAsync({
+          identifier: id,
+          content: {
+            title: `💊 Medicamento de ${nombreMascota}`,
+            body: `Es hora de darle ${medicamento}`,
+            sound: true,
+          },
+          trigger: {
+            type: 'timeInterval',
+            seconds: 72 * 60 * 60,
+            repeats: true,
+          },
+        });
+        break;
+
+      case 'semanal':
+        await programarSemanal(id, nombreMascota, medicamento, horas, minutos);
+        break;
+
+      case '2 veces/semana':
+        await programarSemanal(`${id}_1`, nombreMascota, medicamento, horas, minutos);
+        const diaSemana2 = (new Date().getDay() + 3) % 7 + 1;
+        await Notifications.scheduleNotificationAsync({
+          identifier: `${id}_2`,
+          content: {
+            title: `💊 Medicamento de ${nombreMascota}`,
+            body: `Es hora de darle ${medicamento}`,
+            sound: true,
+          },
+          trigger: {
+            type: 'weekly',
+            weekday: diaSemana2,
+            hour: horas,
+            minute: minutos,
+          },
+        });
+        break;
+
+      case 'cada 15 días':
+        await Notifications.scheduleNotificationAsync({
+          identifier: id,
+          content: {
+            title: `💊 Medicamento de ${nombreMascota}`,
+            body: `Es hora de darle ${medicamento}`,
+            sound: true,
+          },
+          trigger: {
+            type: 'timeInterval',
+            seconds: 15 * 24 * 60 * 60,
+            repeats: true,
+          },
+        });
+        break;
+
+      case 'mensual':
+        await Notifications.scheduleNotificationAsync({
+          identifier: id,
+          content: {
+            title: `💊 Medicamento de ${nombreMascota}`,
+            body: `Es hora de darle ${medicamento}`,
+            sound: true,
+          },
+          trigger: {
+            type: 'timeInterval',
+            seconds: 30 * 24 * 60 * 60,
+            repeats: true,
+          },
+        });
+        break;
+
+      case 'según necesidad':
+        break;
+
+      default:
+        await programarUna(id, nombreMascota, medicamento, horas, minutos);
+        break;
+    }
+  } catch (error) {
+    console.log('No se pudo programar la notificación:', error);
+  }
 };
 
 export const cancelarNotificacion = async (id) => {
